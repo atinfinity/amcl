@@ -25,10 +25,10 @@
  * CVS: $Id: pf.c 6345 2008-04-17 01:36:39Z gerkey $
  *************************************************************************/
 
-#include <assert.h>
-#include <math.h>
-#include <stdlib.h>
-#include <time.h>
+#include <cassert>
+#include <cmath>
+#include <cstdlib>
+#include <ctime>
 
 #include "amcl/pf/pf.h"
 #include "amcl/pf/pf_pdf.h"
@@ -54,7 +54,7 @@ pf_t *pf_alloc(int min_samples, int max_samples,
   
   srand48(time(NULL));
 
-  pf = calloc(1, sizeof(pf_t));
+  pf = (pf_t *)calloc(1, sizeof(pf_t));
 
   pf->random_pose_fn = random_pose_fn;
   pf->random_pose_data = random_pose_data;
@@ -77,7 +77,7 @@ pf_t *pf_alloc(int min_samples, int max_samples,
     set = pf->sets + j;
       
     set->sample_count = max_samples;
-    set->samples = calloc(max_samples, sizeof(pf_sample_t));
+    set->samples = (pf_sample_t *)calloc(max_samples, sizeof(pf_sample_t));
 
     for (i = 0; i < set->sample_count; i++)
     {
@@ -93,7 +93,7 @@ pf_t *pf_alloc(int min_samples, int max_samples,
 
     set->cluster_count = 0;
     set->cluster_max_count = max_samples;
-    set->clusters = calloc(set->cluster_max_count, sizeof(pf_cluster_t));
+    set->clusters = (pf_cluster_t *)calloc(set->cluster_max_count, sizeof(pf_cluster_t));
 
     set->mean = pf_vector_zero();
     set->cov = pf_matrix_zero();
@@ -332,19 +332,23 @@ void pf_update_resample(pf_t *pf)
   // (e.g., http://www.network-theory.co.uk/docs/gslref/GeneralDiscreteDistributions.html)
   c = (double*)malloc(sizeof(double)*(set_a->sample_count+1));
   c[0] = 0.0;
-  for(i=0;i<set_a->sample_count;i++)
-    c[i+1] = c[i]+set_a->samples[i].weight;
+  for (i=0;i<set_a->sample_count;i++)
+  {
+    c[i+1] = c[i] + set_a->samples[i].weight;
+  }
 
   // Create the kd tree for adaptive sampling
   pf_kdtree_clear(set_b->kdtree);
-  
+
   // Draw samples from set a to create set b.
   total = 0;
   set_b->sample_count = 0;
 
   w_diff = 1.0 - pf->w_fast / pf->w_slow;
-  if(w_diff < 0.0)
+  if (w_diff < 0.0)
+  {
     w_diff = 0.0;
+  }
   //printf("w_diff: %9.6f\n", w_diff);
 
   // Can't (easily) combine low-variance sampler with KLD adaptive
@@ -357,12 +361,15 @@ void pf_update_resample(pf_t *pf)
   i = 0;
   m = 0;
   */
-  while(set_b->sample_count < pf->max_samples)
+
+  while (set_b->sample_count < pf->max_samples)
   {
     sample_b = set_b->samples + set_b->sample_count++;
 
-    if(drand48() < w_diff)
+    if (drand48() < w_diff)
+    {
       sample_b->pose = (pf->random_pose_fn)(pf->random_pose_data);
+    }
     else
     {
       // Can't (easily) combine low-variance sampler with KLD adaptive
@@ -392,10 +399,12 @@ void pf_update_resample(pf_t *pf)
       // Naive discrete event sampler
       double r;
       r = drand48();
-      for(i=0;i<set_a->sample_count;i++)
+      for (i=0;i<set_a->sample_count;i++)
       {
-        if((c[i] <= r) && (r < c[i+1]))
+        if ((c[i] <= r) && (r < c[i+1]))
+        {
           break;
+        }
       }
       assert(i<set_a->sample_count);
 
@@ -415,12 +424,16 @@ void pf_update_resample(pf_t *pf)
 
     // See if we have enough samples yet
     if (set_b->sample_count > pf_resample_limit(pf, set_b->kdtree->leaf_count))
+    {
       break;
+    }
   }
-  
+
   // Reset averages, to avoid spiraling off into complete randomness.
   if(w_diff > 0.0)
+  {
     pf->w_slow = pf->w_fast = 0.0;
+  }
 
   //fprintf(stderr, "\n\n");
 
@@ -430,7 +443,7 @@ void pf_update_resample(pf_t *pf)
     sample_b = set_b->samples + i;
     sample_b->weight /= total;
   }
-  
+
   // Re-compute cluster statistics
   pf_cluster_stats(pf, set_b);
 

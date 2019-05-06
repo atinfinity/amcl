@@ -28,6 +28,10 @@
 #ifndef PF_KDTREE_H
 #define PF_KDTREE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef INCLUDE_RTKGUI
 #include "rtk.h"
 #endif
@@ -104,6 +108,10 @@ extern int pf_kdtree_get_cluster(pf_kdtree_t *self, pf_vector_t pose);
 // Draw the tree
 extern void pf_kdtree_draw(pf_kdtree_t *self, rtk_fig_t *fig);
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif
