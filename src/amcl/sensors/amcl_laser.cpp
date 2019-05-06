@@ -35,7 +35,7 @@
 #include <unistd.h>
 #endif
 
-#define ENABLE_TEST 1
+#define ENABLE_TEST 0
 #ifdef ENABLE_TEST
 // for debug
 #include <ros/ros.h>
