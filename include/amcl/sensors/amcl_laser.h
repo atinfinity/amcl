@@ -113,13 +113,13 @@ class AMCLLaser : public AMCLSensor
   private: double time;
 
   // The laser map
-  private: map_t *map;
+  public: map_t *map; // [TODO]
 
   // Laser offset relative to robot
-  private: pf_vector_t laser_pose;
+  public: pf_vector_t laser_pose; // [TODO]
   
   // Max beams to consider
-  private: int max_beams;
+  public: int max_beams; // [TODO]
 
   // Beam skipping parameters (used by LikelihoodFieldModelProb model)
   private: bool do_beamskip; 
@@ -137,13 +137,13 @@ class AMCLLaser : public AMCLSensor
   // Laser model params
   //
   // Mixture params for the components of the model; must sum to 1
-  private: double z_hit;
+  public: double z_hit; // [TODO]
   private: double z_short;
   private: double z_max;
-  private: double z_rand;
+  public: double z_rand; // [TODO]
   //
   // Stddev of Gaussian model for laser hits.
-  private: double sigma_hit;
+  public: double sigma_hit; // [TODO]
   // Decay rate of exponential model for short readings.
   private: double lambda_short;
   // Threshold for outlier rejection (unused)
