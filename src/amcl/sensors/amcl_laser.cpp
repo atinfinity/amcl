@@ -370,7 +370,7 @@ double AMCLLaser::LikelihoodFieldModel(AMCLLaserData *data, pf_sample_set_t* set
 
   if (fabs(total_weight - total_weight_cpu) >= 1e-5)
   {
-    ROS_INFO("[FAILED] total_weight = %f, total_weight_ = %f", total_weight, total_weight_);
+    ROS_INFO("[FAILED] total_weight = %f, total_weight_cpu = %f", total_weight, total_weight_cpu);
   }
   free(samples_);
 #endif // ENABLE_TEST
