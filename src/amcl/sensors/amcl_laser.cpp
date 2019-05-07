@@ -30,18 +30,21 @@
 #include <sys/types.h> // required by Darwin
 #include <cmath>
 #include <cstdlib>
+#include <chrono>
 #include <cassert>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 
-#define ENABLE_TEST 0
+//#define ENABLE_TEST
+
 #ifdef ENABLE_TEST
 // for debug
 #include <ros/ros.h>
 #endif
 
 #include "amcl/sensors/amcl_laser.h"
+#include "amcl/sensors/compute_sample_weight.cuh"
 
 using namespace amcl;
 
@@ -248,7 +251,7 @@ double compute_sample_weight(const AMCLLaserData *data, pf_sample_t *samples, co
 
   self = (AMCLLaser*) data->sensor;
 
-  // add
+  // pre-compute a couple of things
   const pf_vector_t laser_pose = self->laser_pose;
   const double sigma_hit = self->sigma_hit;
   const int max_beams = self->max_beams;
@@ -346,21 +349,31 @@ double AMCLLaser::LikelihoodFieldModel(AMCLLaserData *data, pf_sample_set_t* set
   pf_sample_t *samples = set->samples;
 
 #ifdef ENABLE_TEST
-  // store input samples for tesing
+  // store input samples for testing
   pf_sample_t *samples_ = (pf_sample_t *)malloc(sizeof(pf_sample_t) * sample_count);
   memcpy(samples_, samples, sizeof(pf_sample_t) * sample_count);
-#endif
+#endif // ENABLE_TEST
 
-  double total_weight = compute_sample_weight(data, samples, sample_count);
+  std::chrono::system_clock::time_point  start, end;
+  start = std::chrono::system_clock::now();
+  double total_weight = cu_compute_sample_weight(data, samples, sample_count);
+  end = std::chrono::system_clock::now();
+  double elapsed_gpu = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
 
 #ifdef ENABLE_TEST
-  double total_weight_ = compute_sample_weight(data, samples_, sample_count);
-  if (fabs(total_weight - total_weight_) >= DBL_EPSILON)
+  start = std::chrono::system_clock::now();
+  double total_weight_cpu = compute_sample_weight(data, samples_, sample_count);
+  end = std::chrono::system_clock::now();
+  double elapsed_cpu = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
+  //ROS_INFO("[CPU] elapsed = %f ms.", elapsed_cpu);
+  //ROS_INFO("[GPU] elapsed = %f ms.", elapsed_gpu);
+
+  if (fabs(total_weight - total_weight_cpu) >= 1e-5)
   {
-    ROS_INFO("[FAILED] total_weight = %f, total_weight_ = %f", total_weight, total_weight_);
+    ROS_INFO("[FAILED] total_weight = %f, total_weight_cpu = %f", total_weight, total_weight_cpu);
   }
   free(samples_);
-#endif
+#endif // ENABLE_TEST
 
   return(total_weight);
 }

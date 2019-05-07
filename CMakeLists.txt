@@ -37,6 +37,9 @@ find_package(catkin REQUIRED
 
 find_package(Boost REQUIRED)
 
+# CUDA PACKAGE
+find_package(CUDA REQUIRED)
+
 # dynamic reconfigure
 generate_dynamic_reconfigure_options(
     cfg/AMCL.cfg
@@ -73,6 +76,15 @@ if (HAVE_DRAND48)
   add_definitions(-DHAVE_DRAND48)
 endif (HAVE_DRAND48)
 
+# NVCC flags
+set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-Xcompiler -std=c++11")
+set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-gencode arch=compute_61,code=sm_61")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-G;-g;-lineinfo;--ptxas-options=-v")
+else()
+  set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-O3;-g;-lineinfo;--ptxas-options=-v")
+endif()
+
 add_library(amcl_pf
                     src/amcl/pf/pf.cpp
                     src/amcl/pf/pf_kdtree.c
@@ -88,10 +100,12 @@ add_library(amcl_map
                     src/amcl/map/map_store.c
                     src/amcl/map/map_draw.c)
 
-add_library(amcl_sensors
+cuda_add_library(amcl_sensors
                     src/amcl/sensors/amcl_sensor.cpp
                     src/amcl/sensors/amcl_odom.cpp
-                    src/amcl/sensors/amcl_laser.cpp)
+                    src/amcl/sensors/amcl_laser.cpp
+                    src/amcl/sensors/compute_sample_weight.cu)
+
 target_link_libraries(amcl_sensors amcl_map amcl_pf)
 
 
