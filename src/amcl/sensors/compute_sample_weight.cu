@@ -95,14 +95,7 @@ void dev_compute_sample_weight(pf_sample_t samples[], const int max_count,
 
       // Part 1: Get distance from the hit to closest obstacle.
       // Off-map penalized as max distance
-      if(!MAP_VALID(map, mi, mj))
-      {
-        z = map->max_occ_dist;
-      }
-      else
-      {
-        z = map_cells[MAP_INDEX(map,mi,mj)].occ_dist;
-      }
+      z = (!MAP_VALID(map, mi, mj)) ? (map->max_occ_dist) : (map_cells[MAP_INDEX(map,mi,mj)].occ_dist);
 
       // Gaussian model
       // NOTE: this should have a normalization of 1/(sqrt(2pi)*sigma)
@@ -120,8 +113,6 @@ void dev_compute_sample_weight(pf_sample_t samples[], const int max_count,
     }
 
     samples[i].weight *= p;
-
-     __syncthreads(); 
     atomicAdd_double(total_weight, samples[i].weight);
   }
 }
