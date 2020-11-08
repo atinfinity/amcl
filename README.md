@@ -2,7 +2,9 @@
 
 ## Introduction
 This is a CUDA implementation of ROS `amcl` package.  
-`amcl` is a probabilistic localization system for a robot moving in 2D. It implements the adaptive (or KLD-sampling) Monte Carlo localization approach (as described by Dieter Fox), which uses a particle filter to track the pose of a robot against a known map.
+And, this repogitory was derived from <https://github.com/ros-planning/navigation/tree/54e770f681ae392a2c5fc5ed2af56ad6ee1f694b/amcl>.
+
+The `amcl` is a probabilistic localization system for a robot moving in 2D. It implements the adaptive (or KLD-sampling) Monte Carlo localization approach (as described by Dieter Fox), which uses a particle filter to track the pose of a robot against a known map.
 
 ## Requirements
 * CUDA ToolKit
