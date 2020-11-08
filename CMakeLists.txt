@@ -65,6 +65,7 @@ catkin_package(
 include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 include_directories(src/include)
+include(CheckSymbolExists)
 
 check_include_file(unistd.h HAVE_UNISTD_H)
 if (HAVE_UNISTD_H)
